@@ -8,7 +8,7 @@
 | `docker-compose.yml` | PostgreSQL 16 + app; optional Ollama (commented) |
 | `.github/workflows/ci.yml` | CI: build, test, upload reports, build Docker image |
 | `.gitignore` | Ignores build output, IDE files, logs (except `samples/`) |
-| `README.md` | Overview, quick start, walkthrough, resume bullets |
+| `README.md` | Overview, getting started, walkthrough, tests, project structure |
 | `docs/` | ARCHITECTURE, ER-DIAGRAM, API, DEPLOYMENT and this guide |
 | `postman/LogSense.postman_collection.json` | Postman v2.1 collection (`baseUrl`, auto-captured `jobId`/`incidentId`) |
 | `samples/` | Realistic multi-service logs (see README walkthrough) |

@@ -245,7 +245,7 @@ before inventory logs its DB error, and inventory is still chosen (with lower co
 | Trace / event caps in memory | Protects the heap on huge files | Very long traces are truncated for flow analysis (all events are still persisted). |
 | Records + sealed `AiSummarizer` | Immutability, exhaustive implementations | Lombok builders on records add a little magic. |
 
-## 9. SDE-2 interview talking points
+## 9. Scaling & design considerations
 
 **Scaling to TB of logs.** A single JVM streaming at ~100–200k lines/s is fine up to tens of GB per job. Beyond
 that, split ingestion from analysis:
