@@ -1,0 +1,20 @@
+# Activate with: --spring.profiles.active=kafka  (requires a reachable broker)
+spring:
+  autoconfigure:
+    exclude: []
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: logsense
+      auto-offset-reset: earliest
+      max-poll-records: 5000
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    listener:
+      type: batch
+      ack-mode: batch
+
+logsense:
+  kafka:
+    topic: ${LOGSENSE_KAFKA_TOPIC:logsense.raw-logs}
+    group: logsense

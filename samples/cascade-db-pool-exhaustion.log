@@ -1,0 +1,41 @@
+2024-10-15T09:58:00.010Z  INFO 1 --- [api-gateway] [nio-8080-exec-1] [5f3a9c1e7b2d4a60,a1b2c3d4e5f60718] c.l.gateway.RoutingFilter                : Routing request to order-service POST /api/orders
+2024-10-15T09:58:00.025Z  INFO 1 --- [order-service] [nio-8081-exec-4] [5f3a9c1e7b2d4a60,b2c3d4e5f6071829] c.l.order.OrderController               : Creating order ORD-1001 for customer CUST-77
+2024-10-15T09:58:00.030Z  INFO 1 --- [order-service] [nio-8081-exec-4] [5f3a9c1e7b2d4a60,b2c3d4e5f6071829] c.l.order.InventoryClient               : Calling inventory-service to reserve 2 items for order ORD-1001
+2024-10-15T09:58:00.060Z  INFO 1 --- [inventory-service] [nio-8083-exec-2] [5f3a9c1e7b2d4a60,c3d4e5f60718293a] c.l.inventory.StockService              : Reserved 2 items for order ORD-1001
+2024-10-15T09:58:00.075Z  INFO 1 --- [order-service] [nio-8081-exec-4] [5f3a9c1e7b2d4a60,b2c3d4e5f6071829] c.l.order.InventoryClient               : Received response from inventory-service status=200 in 45ms
+2024-10-15T09:58:00.095Z  INFO 1 --- [api-gateway] [nio-8080-exec-1] [5f3a9c1e7b2d4a60,a1b2c3d4e5f60718] c.l.gateway.RoutingFilter                : Received response from order-service status=201 in 85ms
+2024-10-15T09:59:30.000Z  INFO 1 --- [inventory-service] [scheduling-1] [] c.l.inventory.StockSyncJob              : Nightly stock sync started (batch=5000 rows)
+2024-10-15T09:59:58.500Z DEBUG 1 --- [inventory-service] [scheduling-1] [] c.l.inventory.StockSyncJob              : Stock sync holding 10 connections for bulk update
+2024-10-15T10:00:00.100Z  INFO 1 --- [api-gateway] [nio-8080-exec-3] [7c2a8e4f1d9b3c50,d4e5f60718293a4b] c.l.gateway.RoutingFilter                : Routing request to order-service POST /api/orders
+2024-10-15T10:00:00.150Z  INFO 1 --- [order-service] [nio-8081-exec-7] [7c2a8e4f1d9b3c50,e5f60718293a4b5c] c.l.order.OrderController               : Creating order ORD-2001 for customer CUST-12
+2024-10-15T10:00:00.155Z  INFO 1 --- [order-service] [nio-8081-exec-7] [7c2a8e4f1d9b3c50,e5f60718293a4b5c] c.l.order.InventoryClient               : Calling inventory-service to reserve 1 items for order ORD-2001
+2024-10-15T10:00:00.200Z  INFO 1 --- [inventory-service] [nio-8083-exec-5] [7c2a8e4f1d9b3c50,f60718293a4b5c6d] c.l.inventory.StockService              : Reserving stock for order ORD-2001
+2024-10-15T10:00:00.900Z  WARN 1 --- [inventory-service] [nio-8083-exec-5] [7c2a8e4f1d9b3c50,f60718293a4b5c6d] com.zaxxer.hikari.pool.HikariPool       : HikariPool-1 - Connection pool exhausted (total=10, active=10, idle=0, waiting=37)
+2024-10-15T10:00:01.300Z  INFO 1 --- [api-gateway] [nio-8080-exec-5] [9e4b2d6a8c1f3e70,0718293a4b5c6d7e] c.l.gateway.RoutingFilter                : Routing request to order-service POST /api/orders
+2024-10-15T10:00:01.340Z  INFO 1 --- [order-service] [nio-8081-exec-9] [9e4b2d6a8c1f3e70,18293a4b5c6d7e8f] c.l.order.InventoryClient               : Calling inventory-service to reserve 3 items for order ORD-2002
+2024-10-15T10:00:01.900Z  WARN 1 --- [inventory-service] [nio-8083-exec-8] [9e4b2d6a8c1f3e70,293a4b5c6d7e8f90] com.zaxxer.hikari.pool.HikariPool       : HikariPool-1 - Connection pool exhausted (total=10, active=10, idle=0, waiting=52)
+2024-10-15T10:00:05.200Z ERROR 1 --- [order-service] [nio-8081-exec-7] [7c2a8e4f1d9b3c50,e5f60718293a4b5c] c.l.order.InventoryClient               : Read timed out calling inventory-service after 5000ms for order ORD-2001
+java.net.SocketTimeoutException: Read timed out
+	at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(NioSocketImpl.java:546)
+	at java.base/java.net.Socket.connect(Socket.java:751)
+	at org.springframework.web.client.RestClient$DefaultResponseSpec.body(RestClient.java:712)
+	at com.logsense.demo.order.InventoryClient.reserve(InventoryClient.java:58)
+	... 42 more
+2024-10-15T10:00:05.260Z ERROR 1 --- [api-gateway] [nio-8080-exec-3] [7c2a8e4f1d9b3c50,d4e5f60718293a4b] c.l.gateway.RoutingFilter                : 504 GATEWAY_TIMEOUT from order-service after 5160ms POST /api/orders
+2024-10-15T10:00:06.345Z ERROR 1 --- [order-service] [nio-8081-exec-9] [9e4b2d6a8c1f3e70,18293a4b5c6d7e8f] c.l.order.InventoryClient               : Read timed out calling inventory-service after 5000ms for order ORD-2002
+java.net.SocketTimeoutException: Read timed out
+	at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(NioSocketImpl.java:546)
+	at com.logsense.demo.order.InventoryClient.reserve(InventoryClient.java:58)
+2024-10-15T10:00:06.400Z ERROR 1 --- [api-gateway] [nio-8080-exec-5] [9e4b2d6a8c1f3e70,0718293a4b5c6d7e] c.l.gateway.RoutingFilter                : 504 GATEWAY_TIMEOUT from order-service after 5100ms POST /api/orders
+2024-10-15T10:00:30.210Z ERROR 1 --- [inventory-service] [nio-8083-exec-5] [7c2a8e4f1d9b3c50,f60718293a4b5c6d] c.l.inventory.StockService              : Failed to reserve stock for order ORD-2001
+org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection
+	at org.springframework.jdbc.datasource.DataSourceUtils.getConnection(DataSourceUtils.java:84)
+	at com.logsense.demo.inventory.StockRepository.reserve(StockRepository.java:33)
+Caused by: java.sql.SQLTransientConnectionException: HikariPool-1 - Connection is not available, request timed out after 30000ms.
+	at com.zaxxer.hikari.pool.HikariPool.createTimeoutException(HikariPool.java:696)
+	at com.zaxxer.hikari.pool.HikariPool.getConnection(HikariPool.java:181)
+	... 12 more
+2024-10-15T10:00:31.250Z ERROR 1 --- [inventory-service] [nio-8083-exec-8] [9e4b2d6a8c1f3e70,293a4b5c6d7e8f90] c.l.inventory.StockService              : Failed to reserve stock for order ORD-2002
+java.sql.SQLTransientConnectionException: HikariPool-1 - Connection is not available, request timed out after 30000ms.
+	at com.zaxxer.hikari.pool.HikariPool.createTimeoutException(HikariPool.java:696)
+2024-10-15T10:01:10.000Z  INFO 1 --- [inventory-service] [scheduling-1] [] c.l.inventory.StockSyncJob              : Nightly stock sync finished in 100000ms, connections released

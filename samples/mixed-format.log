@@ -1,0 +1,10 @@
+10.0.0.15 - - [15/Oct/2024:13:00:00 +0000] "GET /api/orders/ORD-5001 HTTP/1.1" 200 512 "-" "curl/8.4.0" service=api-gateway upstream=order-service request_time=0.042
+2024-10-15T13:00:01.000Z  INFO 1 --- [order-service] [nio-8081-exec-3] [d1e2f3a4b5c6d7e8,1122aabb3344ccdd] c.l.order.PaymentClient                 : Calling payment-service to capture payment for ORD-5002
+2024-10-15T13:00:01.050Z ERROR 1 --- [order-service] [nio-8081-exec-3] [d1e2f3a4b5c6d7e8,1122aabb3344ccdd] c.l.order.PaymentClient                 : I/O error calling payment-service: Connection refused
+java.net.ConnectException: Connection refused
+	at java.base/sun.nio.ch.Net.pollConnect(Native Method)
+	at com.logsense.demo.order.PaymentClient.capture(PaymentClient.java:63)
+10.0.0.15 - - [15/Oct/2024:13:00:01 +0000] "POST /api/orders/ORD-5002/pay HTTP/1.1" 502 157 "-" "curl/8.4.0" service=api-gateway upstream=order-service traceId=d1e2f3a4b5c6d7e8 request_time=0.061
+{"@timestamp":"2024-10-15T13:00:00.700Z","log.level":"FATAL","service.name":"payment-service","process.thread.name":"main","log.logger":"c.l.payment.Application","message":"Application terminated: java.lang.OutOfMemoryError: Java heap space","error.type":"java.lang.OutOfMemoryError"}
+2024-10-15 13:00:02,000 [main] INFO  com.logsense.demo.payment.Application - service=payment-service Restarting payment-service (attempt 1)
+2024-10-15 13:00:15,500 [main] INFO  com.logsense.demo.payment.Application - service=payment-service Started PaymentApplication in 13.2 seconds

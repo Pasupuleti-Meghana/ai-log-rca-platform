@@ -1,0 +1,218 @@
+{
+  "info": {
+    "_postman_id": "6f1c2a3e-8a3b-4c3e-9a51-1f0d9b6c7e01",
+    "name": "LogSense - AI Log Analysis & RCA",
+    "description": "LogSense REST API. Set baseUrl, run 'Upload log file' (pick samples/cascade-db-pool-exhaustion.log), then run the remaining requests in order. jobId and incidentId are captured automatically by test scripts.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "jobId", "value": "" },
+    { "key": "incidentId", "value": "" },
+    { "key": "traceId", "value": "7c2a8e4f1d9b3c50" }
+  ],
+  "item": [
+    {
+      "name": "Jobs",
+      "item": [
+        {
+          "name": "Upload log file",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('202 Accepted', () => pm.response.to.have.status(202));",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('jobId', body.id);",
+                  "pm.test('job id captured', () => pm.expect(body.id).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "samples/cascade-db-pool-exhaustion.log" }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/jobs", "host": ["{{baseUrl}}"], "path": ["api", "v1", "jobs"] }
+          }
+        },
+        {
+          "name": "Analyze raw text",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('202 Accepted', () => pm.response.to.have.status(202));",
+                  "pm.collectionVariables.set('jobId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceName\": \"billing-service.log\",\n  \"content\": \"2024-10-15 10:00:00,000 [main] ERROR com.acme.Billing - java.sql.SQLException: Connection closed\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/jobs/text", "host": ["{{baseUrl}}"], "path": ["api", "v1", "jobs", "text"] }
+          }
+        },
+        {
+          "name": "Get job status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "console.log('status', pm.response.json().status, 'progress', pm.response.json().progress);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/jobs/{{jobId}}", "host": ["{{baseUrl}}"], "path": ["api", "v1", "jobs", "{{jobId}}"] }
+          }
+        },
+        {
+          "name": "List jobs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/jobs?page=0&size=20",
+              "host": ["{{baseUrl}}"], "path": ["api", "v1", "jobs"],
+              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "20" }]
+            }
+          }
+        },
+        {
+          "name": "Job incidents",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const list = pm.response.json();",
+                  "if (list.length > 0) { pm.collectionVariables.set('incidentId', list[0].id); }",
+                  "pm.test('has incidents', () => pm.expect(list.length).to.be.above(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/jobs/{{jobId}}/incidents", "host": ["{{baseUrl}}"], "path": ["api", "v1", "jobs", "{{jobId}}", "incidents"] }
+          }
+        },
+        {
+          "name": "Service call graph",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/jobs/{{jobId}}/service-graph", "host": ["{{baseUrl}}"], "path": ["api", "v1", "jobs", "{{jobId}}", "service-graph"] }
+          }
+        },
+        {
+          "name": "Transaction flow (trace)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/jobs/{{jobId}}/traces/{{traceId}}", "host": ["{{baseUrl}}"], "path": ["api", "v1", "jobs", "{{jobId}}", "traces", "{{traceId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Incidents",
+      "item": [
+        {
+          "name": "Search incidents",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/incidents?service=inventory-service&severity=CRITICAL&page=0&size=20&sort=firstFailureAt,desc",
+              "host": ["{{baseUrl}}"], "path": ["api", "v1", "incidents"],
+              "query": [
+                { "key": "service", "value": "inventory-service" },
+                { "key": "severity", "value": "CRITICAL" },
+                { "key": "category", "value": "DATABASE", "disabled": true },
+                { "key": "from", "value": "2024-10-15T00:00:00Z", "disabled": true },
+                { "key": "to", "value": "2024-10-16T00:00:00Z", "disabled": true },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" },
+                { "key": "sort", "value": "firstFailureAt,desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Incident details (RCA)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/incidents/{{incidentId}}", "host": ["{{baseUrl}}"], "path": ["api", "v1", "incidents", "{{incidentId}}"] }
+          }
+        },
+        {
+          "name": "PDF report",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('is PDF', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/pdf'));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/incidents/{{incidentId}}/report/pdf", "host": ["{{baseUrl}}"], "path": ["api", "v1", "incidents", "{{incidentId}}", "report", "pdf"] }
+          }
+        },
+        {
+          "name": "JSON export",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/incidents/{{incidentId}}/report/json", "host": ["{{baseUrl}}"], "path": ["api", "v1", "incidents", "{{incidentId}}", "report", "json"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard & Ops",
+      "item": [
+        {
+          "name": "RCA dashboard",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/dashboard", "host": ["{{baseUrl}}"], "path": ["api", "v1", "dashboard"] }
+          }
+        },
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/actuator/health", "host": ["{{baseUrl}}"], "path": ["actuator", "health"] }
+          }
+        },
+        {
+          "name": "Prometheus metrics",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/actuator/prometheus", "host": ["{{baseUrl}}"], "path": ["actuator", "prometheus"] }
+          }
+        }
+      ]
+    }
+  ]
+}

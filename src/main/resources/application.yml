@@ -1,0 +1,93 @@
+spring:
+  application:
+    name: logsense
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/logsense?reWriteBatchedInserts=true}
+    username: ${DB_USERNAME:logsense}
+    password: ${DB_PASSWORD:logsense}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:20}
+      pool-name: logsense-pool
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none   # Flyway is the single source of truth for the schema
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 1000
+          time_zone: UTC
+        order_inserts: true
+        order_updates: true
+        default_batch_fetch_size: 100
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 510MB
+      file-size-threshold: 2MB
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+  threads:
+    virtual:
+      enabled: false
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  error:
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: logsense
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+  api-docs:
+    path: /v3/api-docs
+
+logsense:
+  storage:
+    upload-dir: ${LOGSENSE_UPLOAD_DIR:${java.io.tmpdir}/logsense-uploads}
+    allowed-extensions: [log, txt, json, jsonl, out]
+    delete-after-processing: ${LOGSENSE_DELETE_UPLOADS:true}
+  processing:
+    batch-size: 1000
+    chunk-threads: 0
+    chunk-queue-capacity: 0
+    max-traces: 200000
+    max-events-per-trace: 500
+    max-findings: 10000
+    incident-gap: 5m
+    missing-response-timeout: 30s
+  jobs:
+    core-pool-size: 2
+    max-pool-size: 4
+    queue-capacity: 100
+    await-termination-seconds: 30
+  ai:
+    enabled: ${LOGSENSE_AI_ENABLED:false}
+    base-url: ${LOGSENSE_AI_BASE_URL:http://localhost:11434}
+    api-key: ${LOGSENSE_AI_API_KEY:}
+    model: ${LOGSENSE_AI_MODEL:llama3.1}
+    chat-path: /v1/chat/completions
+    timeout: 30s
+    max-findings-in-prompt: 15
+    temperature: 0.2

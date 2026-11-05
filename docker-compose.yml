@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: logsense
+      POSTGRES_USER: logsense
+      POSTGRES_PASSWORD: logsense
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U logsense -d logsense"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/logsense?reWriteBatchedInserts=true
+      DB_USERNAME: logsense
+      DB_PASSWORD: logsense
+      LOGSENSE_AI_ENABLED: "false"
+      # Enable LLM summaries via the (commented) Ollama service below:
+      # LOGSENSE_AI_ENABLED: "true"
+      # LOGSENSE_AI_BASE_URL: http://ollama:11434
+      # LOGSENSE_AI_MODEL: llama3.1
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads:/var/lib/logsense/uploads
+
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama:/root/.ollama
+  #   # after start: docker compose exec ollama ollama pull llama3.1
+
+volumes:
+  pgdata:
+  uploads:
+  # ollama:

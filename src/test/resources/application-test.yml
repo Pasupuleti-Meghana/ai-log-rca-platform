@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:logsense;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  flyway:
+    enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 500
+
+logsense:
+  storage:
+    upload-dir: target/test-uploads
+    delete-after-processing: true
+  processing:
+    batch-size: 500
+    chunk-threads: 2

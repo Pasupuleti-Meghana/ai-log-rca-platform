@@ -1,0 +1,14 @@
+2024-10-15 11:20:00,050 [http-nio-8081-exec-2] INFO  com.logsense.demo.order.PaymentClient - service=order-service traceId=ab12cd34ef56ab78 spanId=0a1b2c3d4e5f6a7b Calling payment-service to charge order ORD-3001
+2024-10-15 11:20:00,101 [http-nio-8082-exec-3] INFO  com.logsense.demo.payment.PaymentController - service=payment-service traceId=ab12cd34ef56ab78 spanId=1b2c3d4e5f6a7b8c parentSpanId=0a1b2c3d4e5f6a7b Processing payment for john.doe@example.com card=4111 1111 1111 1111 amount=129.99
+2024-10-15 11:20:00,120 [http-nio-8082-exec-3] INFO  com.logsense.demo.payment.FraudClient - service=payment-service traceId=ab12cd34ef56ab78 spanId=1b2c3d4e5f6a7b8c Calling fraud-check-service for risk score
+2024-10-15 11:20:00,130 [http-nio-8082-exec-3] WARN  io.github.resilience4j.retry.Retry - service=payment-service traceId=ab12cd34ef56ab78 spanId=1b2c3d4e5f6a7b8c Retry attempt 1/3 for fraud-check-service failed: java.net.ConnectException: Connection refused
+2024-10-15 11:20:01,140 [http-nio-8082-exec-3] WARN  io.github.resilience4j.retry.Retry - service=payment-service traceId=ab12cd34ef56ab78 spanId=1b2c3d4e5f6a7b8c Retry attempt 2/3 for fraud-check-service failed: java.net.ConnectException: Connection refused
+2024-10-15 11:20:03,150 [http-nio-8082-exec-3] ERROR io.github.resilience4j.retry.Retry - service=payment-service traceId=ab12cd34ef56ab78 spanId=1b2c3d4e5f6a7b8c Retry attempt 3/3 for fraud-check-service failed: java.net.ConnectException: Connection refused
+2024-10-15 11:20:03,155 [http-nio-8082-exec-3] ERROR com.logsense.demo.payment.PaymentService - service=payment-service traceId=ab12cd34ef56ab78 spanId=1b2c3d4e5f6a7b8c Payment failed for order ORD-3001 Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIn0.c2lnbmF0dXJl
+io.github.resilience4j.retry.MaxRetriesExceededException: Retries exhausted after 3 attempts calling fraud-check-service
+	at io.github.resilience4j.retry.MaxRetriesExceededException.createMaxRetriesExceededException(MaxRetriesExceededException.java:30)
+	at com.logsense.demo.payment.FraudClient.score(FraudClient.java:41)
+Caused by: java.net.ConnectException: Connection refused
+	at java.base/sun.nio.ch.Net.pollConnect(Native Method)
+2024-10-15 11:20:03,170 [http-nio-8081-exec-2] ERROR com.logsense.demo.order.PaymentClient - service=order-service traceId=ab12cd34ef56ab78 spanId=0a1b2c3d4e5f6a7b Payment call failed: 503 SERVICE_UNAVAILABLE from payment-service for order ORD-3001
+2024-10-15 11:20:03,180 [http-nio-8081-exec-2] WARN  com.logsense.demo.order.OrderService - service=order-service traceId=ab12cd34ef56ab78 spanId=0a1b2c3d4e5f6a7b Order ORD-3001 moved to PAYMENT_PENDING
