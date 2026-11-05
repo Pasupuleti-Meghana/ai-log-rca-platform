@@ -1,10 +1,34 @@
 # LogSense – AI Log Analysis & Root Cause Analysis Platform
 
+[![CI](https://github.com/Pasupuleti-Meghana/ai-log-rca-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/Pasupuleti-Meghana/ai-log-rca-platform/actions/workflows/ci.yml)
+![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.5-brightgreen?logo=springboot)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue?logo=postgresql)
+![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker)
+![Tests](https://img.shields.io/badge/tests-117-success)
+
 LogSense is a Spring Boot 3 / Java 21 backend. It ingests logs from many microservices and:
 - reconstructs distributed transactions,
 - detects failures,
 - works out **which service failed first and why**,
 - produces RCA reports (API, PDF, JSON, dashboard).
+
+## Table of contents
+
+- [Problem statement](#problem-statement)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Tech stack](#tech-stack)
+- [Getting started](#getting-started)
+- [Sample walkthrough](#sample-walkthrough)
+- [Tests](#tests)
+- [Project structure](#project-structure)
+- [Documentation](#documentation)
+- [Resume bullet points](#resume-bullet-points)
+- [Future enhancements](#future-enhancements)
+- [Limitations](#limitations)
+
+---
 
 ## Problem statement
 
@@ -65,7 +89,20 @@ and scaling talking points. See also the [ER diagram](docs/ER-DIAGRAM.md), the [
 | Tests | JUnit 5, Mockito, MockMvc, AssertJ, Awaitility, H2 (PostgreSQL mode), Testcontainers |
 | Delivery | Docker (multi-stage), Docker Compose, GitHub Actions |
 
-## Quick start
+## Getting started
+
+### Prerequisites
+- JDK 21 and Maven 3.9+
+- Docker (for Option A), or a local PostgreSQL 16 (for Option B)
+
+### Clone
+
+```bash
+git clone https://github.com/Pasupuleti-Meghana/ai-log-rca-platform.git
+cd ai-log-rca-platform
+```
+
+### Run
 
 ```bash
 # Option A: Docker Compose (app + PostgreSQL)
@@ -76,6 +113,7 @@ mvn clean verify
 java -jar target/ai-log-rca-platform-1.0.0.jar
 ```
 
+### URLs
 - Swagger UI: **http://localhost:8080/swagger-ui.html**
 - OpenAPI JSON: http://localhost:8080/v3/api-docs
 - Metrics: http://localhost:8080/actuator/prometheus
@@ -138,6 +176,38 @@ The suite has **117 tests**:
 - `@WebMvcTest` controller tests.
 - `@SpringBootTest` end-to-end tests that upload every sample and assert the root cause, PDF (`%PDF`), JSON export, dashboard and metrics.
 - A Testcontainers PostgreSQL + Flyway test. It is skipped automatically when Docker is unavailable and runs in CI.
+
+## Project structure
+
+```
+src/main/java/com/logsense
+├── ai/          template and OpenAI-compatible LLM summarizers
+├── api/         versioned REST controllers (/api/v1)
+├── config/      async executors, OpenAPI, AI client, properties
+├── domain/      JPA entities and enums
+├── dto/         request/response records
+├── exception/   RFC 7807 error handling
+├── kafka/       optional Kafka ingestion (kafka profile)
+├── mapper/      entity → DTO mapping
+├── processing/  streaming pipeline, parsers, PII masking, detectors, transaction flow
+├── rca/         incident clustering, RCA engine, recommendations
+├── reporting/   dashboard, PDF and JSON reports
+├── repository/  Spring Data repositories + Specifications
+└── service/     job orchestration, events, metrics, report/incident services
+samples/  realistic multi-service log files
+tools/    scripts to generate large log files
+docs/     architecture, ER diagram, API, deployment, file guide
+```
+
+## Documentation
+
+| Document | Contents |
+|---|---|
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Sequence diagram, RCA pseudocode, design trade-offs, scaling |
+| [ER-DIAGRAM.md](docs/ER-DIAGRAM.md) | Data model |
+| [API.md](docs/API.md) | REST endpoint reference |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Docker and production deployment |
+| [FILE-GUIDE.md](docs/FILE-GUIDE.md) | What every file does |
 
 ## Resume bullet points
 
